@@ -1,8 +1,10 @@
 ﻿namespace ConsoleApp1
 {
-
     class Program
     {
+        /// <summary>
+        /// Resets console colors
+        /// </summary>
         static void ResetColor()
         {
             Console.ResetColor();
@@ -10,6 +12,7 @@
         }
 
         //USER LOGIC
+        /// Handles out of bounds values for Cursor's y value 
         static int HandleCursorTop(int cursorTop)
         {
             if (cursorTop < 0)
@@ -18,6 +21,8 @@
                 return Console.BufferHeight - 1;
             return cursorTop;
         }
+        
+        /// Handles out of bounds values for cursor's x value 
         static int HandleCursorLeft(int cursorLeft)
         {
             if (cursorLeft < 1)
@@ -26,7 +31,11 @@
                 return Console.BufferWidth % 2 == 0 ? Console.BufferWidth - 1 : Console.BufferWidth - 2;
             return cursorLeft % 2 == 0 ? HandleCursorLeft(cursorLeft - 1) : cursorLeft;
         }
-        static (int left, int top, bool exit) MakeCursorMovable(bool[,] game)
+        
+        /// Makes the cursor Be able to move freely until a button press
+        /// If the E key is pressed, return the where the cursor is currently at
+        /// If the 0 key is pressed, return the where the cursor is currently at, and indicate that user wants to leave insertion mode
+        static (int left, int top, bool exit) MakeCursorMovable()
         {
             ConsoleKeyInfo k = Console.ReadKey();
             bool exit = false;
@@ -61,7 +70,8 @@
 
             return (Console.CursorLeft, Console.CursorTop, exit);
         }
-
+        
+        /// Runs the user setup for the game
         static void GameUserSetup(bool[,] game)
         {
             (int left, int top, bool exit) = (1, 0, false);
@@ -70,7 +80,7 @@
             {
                 PrintGame(game);
                 Console.SetCursorPosition(HandleCursorLeft(left - 1), top);
-                (left, top, exit) = MakeCursorMovable(game);
+                (left, top, exit) = MakeCursorMovable();
                 if (!exit)
                     game[top, (left - 1) / 2] = !game[top, (left - 1) / 2];
             }
@@ -78,6 +88,7 @@
 
 
         //GAME LOGIC
+        /// Returns the number of neighbors for a cell
         static int GetNumOfNeighbors(bool[,] game, int x, int y)
         {
             int neighbors = 0;
@@ -95,6 +106,8 @@
             return neighbors;
         }
 
+
+        /// responsible for updating the neighbor array
         static void UpdateNeighborArr(bool[,] game, int[,] neighborArr)
         {
             for (int y = 0; y < game.GetLength(0); y++)
@@ -102,6 +115,7 @@
                     neighborArr[y, x] = GetNumOfNeighbors(game, x, y);
         }
 
+        /// Check to see if the cell will be alive next iteration
         static bool WillBeAlive(int[,] neighborArr, bool[,] game, int x, int y)
         {
             if (game[y, x])
@@ -109,6 +123,8 @@
             return neighborArr[y, x] == 3;
         }
 
+
+        /// Updates the game with information from the updated neighbor array
         static void UpdateGame(bool[,] game, int[,] neighborArr)
         {
             UpdateNeighborArr(game, neighborArr);
@@ -128,7 +144,9 @@
             int dimX = int.Parse(Console.ReadLine());
             Console.Write("Y: ");
 
+            // Holds if a cell is active or inactive
             bool[,] game = new bool[int.Parse(Console.ReadLine()), dimX];
+            // The neighbor array holds all neighbors for all cells
             int[,] neighborArr = new int[game.GetLength(0), game.GetLength(1)];
 
             Console.ForegroundColor = ConsoleColor.Red;
